@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="ta">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#060a1a">
+<title>🌳 குர்ஆன் தோட்டம்</title>
+<link rel="preconnect" href="https://verses.quran.foundation">
+<link rel="preload" href="https://verses.quran.foundation/fonts/quran/hafs/uthmanic_hafs/UthmanicHafs1Ver18.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Amiri+Quran&family=Noto+Naskh+Arabic:wght@400;700&family=Noto+Sans+Tamil:wght@400;600;700;800&family=Scheherazade+New:wght@400;700&display=swap" rel="stylesheet">
+<link rel="manifest" href='data:application/json,{"name":"Quran Garden","short_name":"QuranGarden","start_url":".","display":"standalone","background_color":"#060a1a","theme_color":"#060a1a"}'>
+
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="theme-midnight">
+<div id="bootSplash" style="position:fixed;inset:0;z-index:99999;background:#060a1a;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fff;font-family:sans-serif;transition:opacity .3s">
+  <div style="font-size:42px">🌳</div>
+  <div style="font-weight:800;margin-top:8px">குர்ஆன் தோட்டம்</div>
+  <div style="font-size:12px;color:#94a3b8;margin-top:6px">ஏற்றுகிறது…</div>
+</div>
+<script>
+setTimeout(function(){
+  var s=document.getElementById('bootSplash');
+  if(s){ s.style.opacity='0'; setTimeout(function(){try{s.remove()}catch(e){}},400); }
+}, 500);
+</script>
+
+
+<header>
+  <button class="menu-btn-header" id="openMenuBtn">☰</button>
+  <h1>🌳 குர்ஆன் தோட்டம்</h1>
+  <div class="stat-pill">🪙 <span id="coinCount">0</span></div>
+  <div class="stat-pill" id="streakPill">🔥 <span id="streakCount">0</span></div>
+  <button class="icon-btn" id="soundBtn">🔊</button>
+</header>
+
+<main>
+  <section class="screen active" id="screenSelect">
+    <div class="search-bar">
+      <span>🔍</span>
+      <input type="text" id="surahSearchInput" placeholder="சூரா தேடுங்கள்...">
+    </div>
+    
+    <div class="home-juz-bar" id="homeJuzBar"></div>
+    <div id="plotsGrid"></div>
+  </section>
+
+  <section class="screen" id="screenGarden">
+    <button class="back-btn" id="backBtn">⬅ தோட்டங்கள்</button>
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap">
+      <div>
+        <h2 id="gardenNameAr" style="margin:0;font-family:var(--font-ar);font-size:22px"></h2>
+        <small id="gardenNameTa" style="color:var(--blue-glow);font-weight:bold"></small>
+      </div>
+      <button class="reset-btn" id="resetBtn">🔄 ரீசெட்</button>
+    </div>
+    <div class="progress-label" id="progressLabel"></div>
+    <div style="font-size:11px;text-align:center;color:var(--text-dim)">இன்றைய இலக்கு: <span id="dailyLabel">0 / 5</span></div>
+    <div class="daily-bar"><div class="daily-fill" id="dailyFill" style="width:0%"></div></div>
+    <div class="surah-progress-card" id="surahProgressCard">
+      <div class="sp-ring-wrap">
+        <svg class="sp-ring" viewBox="0 0 110 110">
+          <circle class="sp-ring-bg" cx="55" cy="55" r="50"></circle>
+          <circle class="sp-ring-fg" id="spRingFg" cx="55" cy="55" r="50"></circle>
+        </svg>
+        <div class="sp-ring-center">
+          <div class="sp-pct" id="spPct">0%</div>
+          <div class="sp-pct-label">முடிந்தது</div>
+        </div>
+      </div>
+      <div class="sp-stars" id="spStars">☆☆☆</div>
+      <div class="sp-count" id="spCount">0 / 0 ஆயத்துகள்</div>
+    </div>
+    <div class="complete-banner" id="completeBanner">🎉 சூரா முடிந்தது! சிறப்பாக ஓதினீர்கள்</div>
+    <div style="text-align:center;margin:8px 0">
+      <button class="mode-btn active" data-mode="next">➡️ Next</button>
+      <button class="mode-btn" data-mode="blank">✏️ Blank</button>
+      <button class="mode-btn" data-mode="reverse">🔄 Reverse</button>
+    </div>
+    <div style="text-align:center;margin:6px 0">
+      <button class="play-all-btn" id="playSurahAllBtn">🔊 சூரா முழுவதும் கேளுங்கள்</button>
+    </div>
+    <div class="ayah-dots" id="ayahDots"></div>
+  </section>
+
+  <section class="screen" id="screenJuzPlayer">
+    <button class="back-btn" id="juzBackBtn">⬅ தோட்டம்</button>
+    <h2 style="text-align:center;font-size:17px;margin:4px 0 8px" id="juzScreenTitle">🎧 30 ஜுஸ்வு · ஆடியோ</h2>
+    <div class="juz-player-card" id="juzPlayerBar" style="display:none">
+      <div class="juz-now-playing" id="juzNowPlaying">சூராவைத் தொட்டுக் கேளுங்கள்</div>
+      <div class="juz-progress-bar"><div class="juz-progress-fill" id="juzProgressFill"></div></div>
+      <div class="juz-controls">
+        <button class="juz-ctrl-btn" id="juzPrevBtn">⏮</button>
+        <button class="juz-ctrl-btn play" id="juzPlayBtn">▶ இயக்கு</button>
+        <button class="juz-ctrl-btn" id="juzNextBtn">⏭</button>
+        <button class="juz-ctrl-btn" id="juzStopBtn">⏹</button>
+      </div>
+      <div style="font-size:11px;color:var(--text-dim);margin-top:6px" id="juzTrackInfo">—</div>
+    </div>
+    <div class="juz-ayah-panel" id="juzAyahPanel"></div>
+    <div id="juzLoading" style="display:none;text-align:center;padding:20px;color:var(--text-dim)">⏳ ஏற்றுகிறது...</div>
+    <div style="font-size:12px;font-weight:800;color:var(--blue-glow);margin:10px 0 6px;text-align:center" id="juzSurahListTitle">ஜுஸைத் தேர்ந்தெடுக்கவும்</div>
+    <div class="juz-num-grid" id="juzNumGrid"></div>
+    <div class="juz-surah-grid" id="juzSurahGrid" style="display:none"></div>
+  </section>
+
+  
+
+  
+  <section class="screen" id="screenGames">
+    <button class="back-btn" id="gamesBackBtn">⬅ தோட்டம்</button>
+    <h2 style="text-align:center;font-size:18px;margin:6px 0 4px">🎮 விளையாட்டுகள்</h2>
+    <p style="text-align:center;font-size:12px;color:var(--text-dim);margin:0 0 10px">ஹிஃப்ஸ் பயிற்சி · coins சம்பாதிக்கவும்</p>
+    <div class="games-grid" id="gamesMenu">
+      <div class="game-card" data-game="memory">
+        <div class="gc-icon">🃏</div>
+        <div class="gc-title">Memory Match</div>
+        <div class="gc-desc">அஸ்மாஉல் ஹுஸ்னா · அரபி ↔ தமிழ் பெயர் · +15 coins</div>
+      </div>
+      <div class="game-card" data-game="speed">
+        <div class="gc-icon">⚡</div>
+        <div class="gc-title">Speed Quiz</div>
+        <div class="gc-desc">30 வினாடி · ஆயத்து எந்த சூரா? · +20 coins</div>
+      </div>
+      <div class="game-card" data-game="order">
+        <div class="gc-icon">🔢</div>
+        <div class="gc-title">Ayah Order</div>
+        <div class="gc-desc">ஆயத்துகளை சரியான வரிசையில் அடுக்குங்கள் · +25 coins</div>
+      </div>
+      <div class="game-card" data-game="blank">
+        <div class="gc-icon">📝</div>
+        <div class="gc-title">Missing Word</div>
+        <div class="gc-desc">ஆயத்தில் மறைந்த சொல்லை கண்டுபிடியுங்கள் · +20 coins</div>
+      </div>
+      <div class="game-card" data-game="surah">
+        <div class="gc-icon">📖</div>
+        <div class="gc-title">Which Surah?</div>
+        <div class="gc-desc">ஆயத்தைப் பார்த்து சூராவை அடையாளம் காணுங்கள் · +20 coins</div>
+      </div>
+      <div class="game-card" data-game="tf">
+        <div class="gc-icon">✅</div>
+        <div class="gc-title">True / False</div>
+        <div class="gc-desc">ஆயத்து + சூரா சரியா தவறா · +15 coins</div>
+      </div>
+    </div>
+    <div id="gamePlayArea" style="display:none">
+      <div class="game-hud">
+        <span class="gh-score" id="gameScore">⭐ 0</span>
+        <span id="gameTitle">Game</span>
+        <span class="gh-timer" id="gameTimer">⏱ —</span>
+      </div>
+      <div id="gameBody"></div>
+      <div style="text-align:center;margin-top:14px">
+        <button class="back-btn" id="gameQuitBtn">✖ வெளியேறு</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="screen" id="screenBadges">
+    <h2 style="text-align:center;font-size:17px">🏆 சாதனைகள்</h2>
+    <div class="badge-grid" id="badgeGrid"></div>
+  </section>
+
+  <section class="screen" id="screenProfile">
+    <input type="file" id="importFile" accept=".json" style="display:none">
+
+    <h2 style="text-align:center;font-size:17px">👤 சுயவிவரம்</h2>
+    <div style="background:rgba(255,255,255,.05);border:1px solid var(--glass-border);border-radius:14px;padding:14px;margin-bottom:12px">
+      <div style="display:flex;justify-content:space-between;margin-bottom:6px"><span>Coins</span><strong id="pCoins">0</strong></div>
+      <div style="display:flex;justify-content:space-between;margin-bottom:6px"><span>Streak</span><strong id="pStreak">0</strong></div>
+      <div style="display:flex;justify-content:space-between"><span>முடித்த சூரா</span><strong id="pDone">0</strong></div>
+    </div>
+<h3 style="margin:16px 0 4px;font-size:14px;color:var(--blue-glow)" id="themeSectionTitle">🎨 தீம் · 15 நிறங்கள்</h3>
+    <div class="theme-grid" id="themeGrid"></div>
+    <div style="font-size:11px;color:var(--text-dim);text-align:center;margin-bottom:12px" id="themeLabel">Midnight</div>
+
+    <h3 style="margin:16px 0 4px;font-size:14px;color:var(--blue-glow)">✍️ குர்ஆன் எழுத்து முறை</h3>
+    <div class="script-grid" id="scriptGrid">
+      <button type="button" class="script-btn" data-script="indopak">
+        <div class="script-sample" style="font-family:'AlMajeed',serif;direction:rtl;font-size:18px">بِسْمِ اللهِ الرَّحْمٰنِ</div>
+        <div class="script-name">Indo-Pak</div>
+        <div class="script-desc">தெற்காசிய · தாஜ் முஷாஃப்</div>
+      </button>
+      <button type="button" class="script-btn" data-script="uthmani">
+        <div class="script-sample" style="font-family:'UthmanicHafs',serif;direction:rtl;font-size:18px">بِسْمِ ٱللَّهِ ٱلرَّحْمَـٰنِ</div>
+        <div class="script-name">Uthmani</div>
+        <div class="script-desc">மதீனா · King Fahd</div>
+      </button>
+    </div>
+    <div style="font-size:11px;color:var(--text-dim);text-align:center;margin-bottom:12px" id="scriptLabel">Indo-Pak</div>
+
+    <h3 style="margin:16px 0 4px;font-size:14px;color:var(--blue-glow)">📖 ஜுஸ்வு ஃபில்டர் (தோட்டம்)</h3>
+    <p style="font-size:11px;color:var(--text-dim);margin:0 0 8px;line-height:1.4">தோட்டம் திரையில் எந்த ஜுஸ்வு சூராக்கள் காட்ட வேண்டும் என்று தேர்வு செய்யுங்கள்</p>
+    <div class="juz-filter-wrap">
+      <div class="juz-filter-row" id="juzFilterGrid"></div>
+    </div>
+    <div style="font-size:11px;color:var(--text-dim);text-align:center;margin-bottom:12px" id="juzFilterLabel">எல்லா ஜுஸ்வு · 114 சூரா</div>
+
+
+    <button class="submit-btn" id="openDuaBtn" style="background:linear-gradient(135deg,#10b981,#059669);margin-bottom:8px">🤲 40 ரப்பனா துஆ</button>
+    <button class="submit-btn" id="openNabiDuaBtn" style="background:linear-gradient(135deg,#8b5cf6,#6d28d9);margin-bottom:8px">🌙 நபி துஆக்கள்</button>
+    <button class="submit-btn" id="exportBtn" style="margin-bottom:8px">📥 Export</button>
+    <button class="submit-btn" id="importBtn" style="background:linear-gradient(135deg,#3b82f6,#1d4ed8);margin-bottom:8px">📤 Import</button>
+    <button class="submit-btn" id="shareProfileBtn" style="background:linear-gradient(135deg,#a78bfa,#7c3aed);margin-top:8px">📲 Share</button>
+  </section>
+
+  <section class="screen" id="screenDhikr">
+    <h2 style="text-align:center;font-size:17px">📿 திக்ர்</h2>
+    <p style="text-align:center;font-size:12px;color:var(--text-dim);margin:-4px 0 12px">தொட்டு எண்ணுங்கள் · அல்லாஹ்வை நினைவுகூருங்கள்</p>
+
+    <div class="dhikr-section-title">✨ அன்றாட திக்ர்கள்</div>
+    <div id="dhikrList"></div>
+
+    <div class="dhikr-section-title">🕌 தொழுகைக்குப் பின் திக்ர்</div>
+    <div class="dhikr-counter-box" id="dhikrTapArea">
+      <div class="dhikr-count-label" id="dhikrStepLabel">سُبْحَانَ اللَّهِ</div>
+      <div class="dhikr-ar" id="dhikrStepAr" class="dhikr-ar" style="margin:10px 0">سُبْحَانَ اللَّهِ</div>
+      <div class="dhikr-ta" id="dhikrStepTa" style="margin-bottom:4px">சுப்ஹானல்லாஹ்</div>
+      <div class="dhikr-bead" id="dhikrBead">0</div>
+      <div class="dhikr-count-num" id="dhikrCount" style="display:none">0</div>
+      <div class="dhikr-progress"><i id="dhikrBar"></i></div>
+      <div style="font-size:11px;color:var(--text-dim)" id="dhikrTarget">0 / ∞</div>
+      <div class="dhikr-mode-hint" id="dhikrModeHint">மேலே உள்ள திக்ரைத் தேர்ந்தெடுங்கள் · பெட்டியைத் தொட்டு எண்ணுங்கள்</div>
+      <div class="dhikr-count-btns" style="margin-top:12px">
+        <button type="button" id="dhikrMinus">−1</button>
+        <button type="button" class="primary" id="dhikrPlus">+1</button>
+        <button type="button" id="dhikrReset">↺ மீள்</button>
+        <button type="button" id="dhikrSalahMode">🕌 தொழுகை பின்</button>
+        <button type="button" id="dhikrSoundBtn">🔊 ஒலி</button>
+      </div>
+    </div>
+    <div style="font-size:11px;color:var(--text-dim);text-align:center;margin-top:4px;line-height:1.5">
+      வரிசை: சுப்ஹானல்லாஹ் 33 → அல்ஹம்து 33 → அல்லாஹு அக்பர் 33 → தஹ்லீல் (100)
+    </div>
+  </section>
+
+  <section class="screen" id="screenDua">
+    <h2 style="text-align:center;font-size:17px">🤲 40 ரப்பனா துஆ</h2>
+    <p style="text-align:center;font-size:12px;color:var(--text-dim);margin:-4px 0 12px">குர்ஆனில் வரும் ரப்பனா துஆக்கள் · தமிழ் பொருள்</p>
+    <input type="search" class="dua-search" id="duaSearch" placeholder="துஆ / பொருள் தேடுங்கள்..." enterkeyhint="search">
+    <div class="dua-list" id="duaList"></div>
+  </section>
+
+  <section class="screen" id="screenNabiDua">
+    <h2 style="text-align:center;font-size:17px">🌙 நபி துஆக்கள்</h2>
+    <p style="text-align:center;font-size:12px;color:var(--text-dim);margin:-4px 0 10px">நபி (ஸல்) கற்றுத்தந்த மஸ்னூன் துஆக்கள் · தமிழ் பொருள்</p>
+    <div id="nabiDuaCats" style="display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-bottom:12px"></div>
+    <input type="search" class="dua-search" id="nabiDuaSearch" placeholder="துஆ / வகை தேடுங்கள்...">
+    <div class="dua-list" id="nabiDuaList"></div>
+  </section>
+
+  <section class="screen" id="screenFinder">
+    <h2 style="text-align:center;font-size:17px">🎙️ ஓதிக் கண்டுபிடி</h2>
+    <p style="text-align:center;font-size:12px;color:var(--text-dim);margin:-4px 0 10px">தொடர்ந்து ஓதுங்கள் · ஆயத்து தானே நகரும் · நின்றால் நிற்கும்</p>
+
+    <div style="display:flex;gap:8px;justify-content:center;margin-bottom:12px;flex-wrap:wrap">
+      <button type="button" class="nabi-cat active" id="finderModeFollow" data-fmode="follow">📖 Follow Mode</button>
+      <button type="button" class="nabi-cat" id="finderModeSearch" data-fmode="search">🔍 தேடல் Mode</button>
+    </div>
+
+    <div class="finder-box" id="finderFollowBox">
+      <div style="font-size:12px;color:var(--text-dim);margin-bottom:8px">தொடக்க சூரா (விரும்பினால்)</div>
+      <div style="display:flex;gap:8px;margin-bottom:10px">
+        <select id="finderStartSurah" style="flex:1;padding:10px;border-radius:12px;border:1px solid var(--glass-border);background:rgba(0,0,0,.3);color:#fff;font-size:13px"></select>
+      </div>
+      <button type="button" class="finder-mic" id="finderMicBtn" title="Follow தொடங்கு">🎤</button>
+      <div class="finder-status" id="finderStatus">🎤 அழுத்தி ஓதத் தொடங்குங்கள் — நின்றால் தானே நிற்கும்</div>
+
+      <div id="finderLiveCard" style="display:none;margin-top:12px;text-align:right;background:rgba(18,224,122,.12);border:1px solid var(--emerald);border-radius:14px;padding:14px">
+        <div id="finderLiveMeta" style="font-size:12px;color:#86efac;font-weight:800;text-align:left;margin-bottom:8px"></div>
+        <div id="finderLiveAr" dir="rtl" style="font-family:var(--font-ar);font-size:26px;line-height:2;color:var(--gold-light)"></div>
+        <div id="finderLiveProgress" style="margin-top:10px;font-size:12px;color:var(--text-dim);text-align:left"></div>
+      </div>
+
+      <div class="finder-heard" id="finderHeard" dir="rtl" style="font-size:14px;opacity:.85"></div>
+      <p class="finder-hint">
+        • Follow Mode: ஓத ஓத அடுத்த ஆயத்துக்குச் செல்லும்<br>
+        • நடுவில் நின்றால் 2–3 வினாடியில் நிற்கும்<br>
+        • Chrome + mic + Internet சிறப்பு<br>
+        • முதல் ஆயத்தைத் தெளிவாகத் தொடங்குங்கள்
+      </p>
+    </div>
+
+    <div class="finder-box" id="finderSearchBox" style="display:none">
+      <div style="font-size:11px;color:var(--text-dim);margin-bottom:6px">ஆயத்து Arabic டைப் / பேஸ்ட்:</div>
+      <textarea id="finderTextInput" dir="rtl" rows="2" placeholder="بسم الله ... " style="width:100%;padding:10px;border-radius:12px;border:1px solid var(--glass-border);background:rgba(0,0,0,.25);color:var(--gold-light);font-family:var(--font-ar);font-size:18px;line-height:1.8;resize:vertical"></textarea>
+      <button type="button" class="submit-btn" id="finderTextSearchBtn" style="margin-top:8px;background:linear-gradient(135deg,#3b82f6,#1d4ed8)">🔍 உரையால் தேடு</button>
+      <div class="finder-result" id="finderResult">
+        <div class="fr-title" id="finderResTitle">கண்டுபிடிக்கப்பட்டது</div>
+        <div class="fr-meta" id="finderResMeta"></div>
+        <div class="fr-ar" id="finderResAr" dir="rtl"></div>
+        <div class="finder-alt" id="finderAlts"></div>
+        <button type="button" class="submit-btn" id="finderOpenBtn" style="margin-top:10px">🌳 தோட்டத்தில் திற</button>
+      </div>
+    </div>
+  </section>
+
+
+
+
+
+
+
+</main>
+
+<div class="menu-overlay" id="menuOverlay"></div>
+<aside class="side-menu" id="sideMenu">
+  <button class="side-menu-close" id="closeMenuBtn">➜</button>
+  <div class="side-profile">
+    <div class="side-avatar">🌳</div>
+    <div>
+      <div class="side-profile-name">குர்ஆன் தோட்டம்</div>
+      <div class="side-profile-sub">🪙 <span id="sideCoins">0</span> · 🔥 <span id="sideStreak">0</span></div>
+    </div>
+  </div>
+  <nav>
+    <button class="side-nav-item active" data-screen="screenSelect"><span class="side-nav-icon"><img src="icons/home.png" alt=""></span><span class="side-nav-label">தோட்டம்</span></button>
+    <button class="side-nav-item" data-screen="screenSelect"><span class="side-nav-icon"><img src="icons/book.png" alt=""></span><span class="side-nav-label">சூராக்கள்</span></button>
+    <button class="side-nav-item" data-screen="screenJuzPlayer"><span class="side-nav-icon"><img src="icons/cart.png" alt=""></span><span class="side-nav-label">ஜுஸ்வு ஆடியோ</span></button>
+    <button class="side-nav-item" data-screen="screenGames"><span class="side-nav-icon"><img src="icons/backpack.png" alt=""></span><span class="side-nav-label">விளையாட்டு</span></button>
+    <button class="side-nav-item" data-screen="screenBadges"><span class="side-nav-icon"><img src="icons/crown.png" alt=""></span><span class="side-nav-label">சாதனைகள்</span></button>
+    <button class="side-nav-item" data-screen="screenDhikr"><span class="side-nav-icon"><img src="icons/lock.png" alt=""></span><span class="side-nav-label">திக்ர்</span></button>
+    <button class="side-nav-item" data-screen="screenDua"><span class="side-nav-icon"><img src="icons/bag.png" alt=""></span><span class="side-nav-label">ரப்பனா துஆ</span></button>
+    <button class="side-nav-item" data-screen="screenNabiDua"><span class="side-nav-icon"><img src="icons/shop.png" alt=""></span><span class="side-nav-label">நபி துஆக்கள்</span></button>
+    <button class="side-nav-item" data-screen="screenFinder"><span class="side-nav-icon"><img src="icons/clipboard.png" alt=""></span><span class="side-nav-label">ஓதிக் கண்டுபிடி</span></button>
+    <button class="side-nav-item" data-screen="screenProfile"><span class="side-nav-icon"><img src="icons/gear.png" alt=""></span><span class="side-nav-label">சுயவிவரம்</span></button>
+    <button class="side-nav-item" id="sideAdminBtn"><span class="side-nav-icon"><img src="icons/chat.png" alt=""></span><span class="side-nav-label">தொடர்பு</span></button>
+    <button class="side-nav-item" id="sideSoundBtn"><span class="side-nav-icon"><img src="icons/tv.png" alt=""></span><span class="side-nav-label">Sound</span></button>
+  </nav>
+</aside>
+
+<div class="overlay" id="adminOverlay">
+  <div class="modal" style="text-align:center">
+    <h3 style="margin-top:0;color:var(--blue-glow)">💬 தொடர்பு · WhatsApp</h3>
+    <p style="font-size:13px;color:var(--text-dim);line-height:1.5;margin:8px 0 16px">
+      கேள்வி, பரிந்துரை அல்லது உதவிக்கு WhatsApp-ல் செய்தி அனுப்புங்கள்
+    </p>
+    <div style="background:rgba(37,211,102,.12);border:1px solid rgba(37,211,102,.35);border-radius:16px;padding:16px;margin-bottom:14px">
+      <div style="font-size:28px;margin-bottom:6px">📱</div>
+      <div style="font-size:20px;font-weight:800;letter-spacing:1px;color:#fff" id="adminWaNumber">7092427154</div>
+      <div style="font-size:11px;color:var(--text-dim);margin-top:4px">India · WhatsApp</div>
+    </div>
+    <a id="adminWaLink" href="https://wa.me/917092427154" target="_blank" rel="noopener"
+       class="submit-btn" style="display:block;text-decoration:none;background:linear-gradient(135deg,#25D366,#128C7E);margin-bottom:10px">
+      💬 WhatsApp திற
+    </a>
+    <button type="button" class="submit-btn" id="adminWaCopyBtn" style="background:linear-gradient(135deg,#3b82f6,#1d4ed8);margin-bottom:10px">
+      📋 Number Copy
+    </button>
+    <button type="button" class="modal-close" id="closeAdminBtn">மூடு</button>
+  </div>
+</div>
+
+<div class="overlay" id="quizOverlay">
+  <div class="modal" id="quizModal">
+    <div class="modal-sticky-top">
+      <div style="font-size:12px;font-weight:bold;color:var(--blue-glow);flex:1" id="quizLabel">ஆயத்தைத் தேர்ந்தெடுக்கவும்</div>
+      <button type="button" class="modal-close" id="quizCancel">✖ மூடு</button>
+    </div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px">
+      <button type="button" class="tajweed-btn on" id="tajweedToggleBtn">🎨 தஜ்வீத்</button>
+      <button type="button" class="tajweed-btn on" id="meaningToggleBtn">📖 பொருள்</button>
+    </div>
+    <div class="context-ayah" id="contextAyah"></div>
+    <div class="tajweed-legend show" id="tajweedLegend">
+      <span><i class="dot" style="background:#22c55e"></i>குன்னா</span>
+      <span><i class="dot" style="background:#ef4444"></i>கல்கலா</span>
+      <span><i class="dot" style="background:#3b82f6"></i>சின்ன மத்து</span>
+      <span><i class="dot" style="background:#dc2626"></i>பெரிய மத்து</span>
+      <span><i class="dot" style="background:#a855f7"></i>இட்காம்</span>
+      <span><i class="dot" style="background:#06b6d4"></i>இக்லாப்</span>
+      <span><i class="dot" style="background:#ec4899"></i>இக்ஃபா</span>
+      <span><i class="dot" style="background:#eab308"></i>சத்தா</span>
+    </div>
+    <div id="audioWrap" style="text-align:center"></div>
+    <div id="optionsWrap"></div>
+    
+  </div>
+</div>
+
+
+
+  <script src="js/app.js" defer></script>
+  <script src="js/animations.js" defer></script>
+</body>
+</html>
