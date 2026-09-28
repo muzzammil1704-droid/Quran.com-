@@ -1,0 +1,989 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alhamdulillah Gadgets</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;500;600;700&family=Noto+Sans+Tamil:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        heading: ['Poppins', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            dark: '#0f172a',
+                            card: '#1e293b',
+                            accent: '#3b82f6',
+                            gold: '#f59e0b',
+                            success: '#10b981',
+                            pink: '#ec4899',
+                            whatsapp: '#25d366'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="css/style.css">
+
+    <!-- Firebase (real-time cloud database) + Cloudinary (photo/video hosting, no card needed) -->
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+    <script src="js/firebase-config.js"></script>
+
+</head>
+<body class="antialiased min-h-screen">
+
+    <!-- Header -->
+    <header class="sticky top-0 z-50 bg-white/80 backdrop-blur-lg border-b border-gray-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center gap-3 cursor-pointer" onclick="app.goHome()">
+                    <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center shadow-lg header-icon">
+                        <i class="fas fa-bolt text-white text-lg"></i>
+                    </div>
+                    <div>
+                        <h1 class="font-heading font-bold text-xl text-gray-900">Alhamdulillah <span class="text-blue-500">Gadgets</span></h1>
+                        <p class="text-[10px] md:text-xs text-gray-500 font-medium leading-tight -mt-0.5">Powered by Faith, Driven by Tech 🚀</p>
+                    </div>
+                </div>
+
+                <nav class="hidden md:flex items-center gap-2">
+                    <button onclick="app.showModal('search')" class="nav-link">
+                        <i class="fas fa-search mr-2"></i>Search
+                    </button>
+                    <button onclick="app.showCart()" class="nav-link relative">
+                        <i class="fas fa-shopping-cart mr-2"></i>Cart
+                        <span id="cart-badge" class="absolute -top-1 -right-1 w-5 h-5 bg-pink-500 text-white text-xs rounded-full flex items-center justify-center font-bold hidden">0</span>
+                    </button>
+                    <button onclick="app.showModal('orders')" class="nav-link">
+                        <i class="fas fa-box mr-2"></i>Orders
+                    </button>
+                    <button onclick="app.openAdmin()" class="nav-link">
+                        <i class="fas fa-cog mr-2"></i>Admin
+                    </button>
+                </nav>
+
+                <button onclick="app.showModal('menu')" class="md:hidden p-2 rounded-lg hover:bg-gray-100">
+                    <i class="fas fa-bars text-xl"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        
+        <!-- Hero -->
+        <section class="mb-6">
+            <div class="bg-gradient-to-r from-blue-600 to-blue-700 rounded-2xl p-4 md:p-5 text-white relative overflow-hidden">
+                <div class="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg width=\'60\' height=\'60\' viewBox=\'0 0 60 60\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'none\' fill-rule=\'evenodd\'%3E%3Cg fill=\'%23ffffff\' fill-opacity=\'0.1\'%3E%3Cpath d=\'M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z\'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')]"></div>
+                <div class="relative z-10">
+                    <div class="flex items-start gap-3">
+                        <div class="flex-shrink-0 w-9 h-9 bg-white/20 rounded-full flex items-center justify-center mt-0.5">
+                            <i class="fas fa-quote-right text-sm"></i>
+                        </div>
+                        <div>
+                            <p class="text-base md:text-lg font-bold leading-snug mb-1.5" style="font-family: 'Noto Sans Tamil', 'Inter', sans-serif;">
+                                யார் மோசடி செய்கிறாரோ, அவர் நம்மைச் சார்ந்தவர் அல்ல.
+                            </p>
+                            <p class="text-blue-100 text-xs md:text-sm leading-relaxed mb-3" style="font-family: 'Noto Sans Tamil', 'Inter', sans-serif;">
+                                இது நபி ﷺ அவர்கள் கூறிய மிகக் கடுமையான எச்சரிக்கை. வியாபாரம், பொருள் விற்பனை, கொடுக்கல்-வாங்கல் போன்றவற்றில் ஏமாற்றுதல், குறையை மறைத்தல், மோசடி செய்தல் ஆகியவற்றைத் தடை செய்கிறது.
+                            </p>
+                            <p class="text-white text-xs md:text-sm font-semibold leading-relaxed mb-1" style="font-family: 'Noto Sans Tamil', 'Inter', sans-serif;">
+                                உண்மைக்கு கிடைத்த பரிசு 🤍
+                            </p>
+                            <p class="text-blue-100 text-xs md:text-sm leading-relaxed" style="font-family: 'Noto Sans Tamil', 'Inter', sans-serif;">
+                                இதைத் தான் வெளியேயும் விற்கிறார்கள். நான் உண்மையில் சொல்லி விற்கிறேன் — இது copy என்று. அவர்கள் சொல்ல மாட்டார்கள். அதனால் தான் யாரும் வாங்கவில்லையா? வெளியே வாங்கி யாரும் ஏமாற வேண்டாம் என்ற நோக்கம் மட்டும் தான். அல்லாஹ் போதுமானவன்.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Search Bar -->
+        <section class="mb-8">
+            <div class="relative max-w-2xl mx-auto">
+                <input type="text" id="home-search" placeholder="Search products..." 
+                    class="w-full pl-12 pr-4 py-3.5 rounded-2xl border-2 border-gray-200 bg-white shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none text-gray-800 placeholder-gray-400 transition-all"
+                    onkeyup="app.handleHomeSearch(this.value)">
+                <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-lg"></i>
+            </div>
+            <div id="home-search-results" class="max-w-2xl mx-auto mt-3 space-y-2"></div>
+        </section>
+
+        <!-- Combo Offers -->
+        <section id="combos-section" class="mb-10">
+            <div class="flex items-center justify-between mb-5">
+                <h3 class="font-heading text-2xl font-bold text-gray-900 flex items-center gap-2">
+                    <i class="fas fa-gift text-pink-500"></i> Combo Offers
+                </h3>
+            </div>
+            <div id="combos-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                <p class="col-span-full text-sm text-gray-400 text-center py-6">Loading combos...</p>
+            </div>
+        </section>
+
+        <!-- Products -->
+        <section id="products-section">
+            <div class="flex items-center justify-between mb-6">
+                <h3 class="font-heading text-2xl font-bold text-gray-900">Featured Products</h3>
+            </div>
+
+            <!-- 3D Icon Category Buttons -->
+            <div class="overflow-x-auto cat-scroll mb-8">
+                <div class="flex gap-3 pb-2" style="min-width: max-content;">
+
+                    <!-- ALL -->
+                    <button onclick="app.filterCategory('all')" class="cat-btn active" id="btn-all">
+                        <svg class="icon-3d" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+                          <defs>
+                            <linearGradient id="g-all-top" x1="10" y1="10" x2="70" y2="70" gradientUnits="userSpaceOnUse">
+                              <stop offset="0%" stop-color="#60a5fa"/>
+                              <stop offset="100%" stop-color="#1d4ed8"/>
+                            </linearGradient>
+                            <linearGradient id="g-all-side" x1="0" y1="0" x2="1" y2="0" gradientUnits="userSpaceOnUse">
+                              <stop offset="0%" stop-color="#1e40af"/>
+                              <stop offset="100%" stop-color="#1d4ed8"/>
+                            </linearGradient>
+                          </defs>
+                          <rect x="12" y="12" width="56" height="56" rx="10" fill="url(#g-all-top)"/>
+                          <line x1="12" y1="38" x2="68" y2="38" stroke="white" stroke-width="2.5" stroke-opacity="0.5"/>
+                          <line x1="40" y1="12" x2="40" y2="68" stroke="white" stroke-width="2.5" stroke-opacity="0.5"/>
+                          <rect x="17" y="17" width="20" height="18" rx="4" fill="white" fill-opacity="0.25"/>
+                          <rect x="43" y="17" width="20" height="18" rx="4" fill="white" fill-opacity="0.25"/>
+                          <rect x="17" y="43" width="20" height="18" rx="4" fill="white" fill-opacity="0.25"/>
+                          <rect x="43" y="43" width="20" height="18" rx="4" fill="white" fill-opacity="0.35"/>
+                          <rect x="12" y="12" width="56" height="6" rx="10" fill="white" fill-opacity="0.2"/>
+                          <rect x="12" y="12" width="6" height="56" rx="5" fill="white" fill-opacity="0.1"/>
+                        </svg>
+                        <span class="cat-label">All</span>
+                    </button>
+
+                    <!-- SMART WATCH -->
+                    <button onclick="app.filterCategory('smartwatch')" class="cat-btn" id="btn-smartwatch">
+                        <svg class="icon-3d" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+                          <defs>
+                            <linearGradient id="g-watch-body" x1="20" y1="15" x2="60" y2="65" gradientUnits="userSpaceOnUse">
+                              <stop offset="0%" stop-color="#60a5fa"/>
+                              <stop offset="100%" stop-color="#1d4ed8"/>
+                            </linearGradient>
+                            <linearGradient id="g-watch-screen" x1="27" y1="25" x2="53" y2="55" gradientUnits="userSpaceOnUse">
+                              <stop offset="0%" stop-color="#dbeafe"/>
+                              <stop offset="100%" stop-color="#93c5fd"/>
+                            </linearGradient>
+                            <linearGradient id="g-watch-strap" x1="0" y1="0" x2="0" y2="1" gradientUnits="userSpaceOnUse">
+                              <stop offset="0%" stop-color="#1e3a8a"/>
+                              <stop offset="100%" stop-color="#1d4ed8"/>
+                            </linearGradient>
+                          </defs>
+                          <rect x="30" y="4" width="20" height="14" rx="5" fill="#1e40af"/>
+                          <rect x="30" y="62" width="20" height="14" rx="5" fill="#1e40af"/>
+                          <line x1="33" y1="10" x2="47" y2="10" stroke="white" stroke-width="1.5" stroke-opacity="0.4"/>
+                          <line x1="33" y1="68" x2="47" y2="68" stroke="white" stroke-width="1.5" stroke-opacity="0.4"/>
+                          <rect x="18" y="18" width="44" height="44" rx="12" fill="url(#g-watch-body)"/>
+                          <rect x="18" y="18" width="44" height="8" rx="12" fill="white" fill-opacity="0.2"/>
+                          <rect x="62" y="32" width="5" height="10" rx="2" fill="#1e40af"/>
+                          <rect x="24" y="24" width="32" height="32" rx="7" fill="url(#g-watch-screen)"/>
+                          <circle cx="40" cy="40" r="12" fill="none" stroke="#1d4ed8" stroke-width="1.5" stroke-opacity="0.3"/>
+                          <line x1="40" y1="40" x2="40" y2="31" stroke="#1d4ed8" stroke-width="2.5" stroke-linecap="round"/>
+                          <line x1="40" y1="40" x2="47" y2="44" stroke="#1d4ed8" stroke-width="2" stroke-linecap="round"/>
+                          <circle cx="40" cy="40" r="2.5" fill="#1d4ed8"/>
+                        </svg>
+                        <span class="cat-label">Smart Watch</span>
+                    </button>
+
+                    <!-- AUTOMATIC WATCH -->
+                    <button onclick="app.filterCategory('automaticwatch')" class="cat-btn" id="btn-automaticwatch">
+                        <svg class="icon-3d" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+                          <defs>
+                            <linearGradient id="g-auto-case" x1="15" y1="15" x2="65" y2="65" gradientUnits="userSpaceOnUse">
+                              <stop offset="0%" stop-color="#60a5fa"/>
+                              <stop offset="100%" stop-color="#1d4ed8"/>
+                            </linearGradient>
+                            <linearGradient id="g-auto-face" x1="25" y1="25" x2="55" y2="55" gradientUnits="userSpaceOnUse">
+                              <stop offset="0%" stop-color="#dbeafe"/>
+                              <stop offset="100%" stop-color="#93c5fd"/>
+                            </linearGradient>
+                            <linearGradient id="g-auto-bezel" x1="20" y1="20" x2="60" y2="60" gradientUnits="userSpaceOnUse">
+                              <stop offset="0%" stop-color="#3b82f6"/>
+                              <stop offset="100%" stop-color="#1e40af"/>
+                            </linearGradient>
+                          </defs>
+                          <!-- Strap top -->
+                          <rect x="32" y="2" width="16" height="12" rx="4" fill="#1e40af"/>
+                          <line x1="35" y1="6" x2="45" y2="6" stroke="white" stroke-width="1.2" stroke-opacity="0.4"/>
+                          <!-- Strap bottom -->
+                          <rect x="32" y="66" width="16" height="12" rx="4" fill="#1e40af"/>
+                          <line x1="35" y1="74" x2="45" y2="74" stroke="white" stroke-width="1.2" stroke-opacity="0.4"/>
+                          <!-- Outer case -->
+                          <circle cx="40" cy="40" r="26" fill="url(#g-auto-case)"/>
+                          <circle cx="40" cy="40" r="26" fill="white" fill-opacity="0.15"/>
+                          <!-- Bezel ring -->
+                          <circle cx="40" cy="40" r="22" fill="none" stroke="url(#g-auto-bezel)" stroke-width="4"/>
+                          <!-- Face -->
+                          <circle cx="40" cy="40" r="18" fill="url(#g-auto-face)"/>
+                          <!-- Hour markers -->
+                          <circle cx="40" cy="26" r="1.5" fill="#1d4ed8"/>
+                          <circle cx="40" cy="54" r="1.5" fill="#1d4ed8"/>
+                          <circle cx="26" cy="40" r="1.5" fill="#1d4ed8"/>
+                          <circle cx="54" cy="40" r="1.5" fill="#1d4ed8"/>
+                          <circle cx="30" cy="30" r="1" fill="#1e40af"/>
+                          <circle cx="50" cy="30" r="1" fill="#1e40af"/>
+                          <circle cx="30" cy="50" r="1" fill="#1e40af"/>
+                          <circle cx="50" cy="50" r="1" fill="#1e40af"/>
+                          <!-- Hands -->
+                          <line x1="40" y1="40" x2="40" y2="28" stroke="#1d4ed8" stroke-width="2.5" stroke-linecap="round"/>
+                          <line x1="40" y1="40" x2="50" y2="40" stroke="#1e40af" stroke-width="2" stroke-linecap="round"/>
+                          <!-- Center pin -->
+                          <circle cx="40" cy="40" r="2.5" fill="#1d4ed8"/>
+                          <circle cx="40" cy="40" r="1" fill="#bfdbfe"/>
+                          <!-- Crown -->
+                          <rect x="64" y="35" width="6" height="10" rx="2" fill="#1e40af"/>
+                          <rect x="64" y="35" width="6" height="3" rx="1" fill="white" fill-opacity="0.25"/>
+                        </svg>
+                        <span class="cat-label">Automatic</span>
+                    </button>
+
+                    <!-- MEN'S WATCH -->
+                    <button onclick="app.filterCategory('menswatch')" class="cat-btn" id="btn-menswatch">
+                        <svg class="icon-3d" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+                          <defs>
+                            <linearGradient id="g-mw-case" x1="15" y1="15" x2="65" y2="65" gradientUnits="userSpaceOnUse">
+                              <stop offset="0%" stop-color="#60a5fa"/>
+                              <stop offset="100%" stop-color="#1d4ed8"/>
+                            </linearGradient>
+                            <linearGradient id="g-mw-face" x1="25" y1="25" x2="55" y2="55" gradientUnits="userSpaceOnUse">
+                              <stop offset="0%" stop-color="#dbeafe"/>
+                              <stop offset="100%" stop-color="#93c5fd"/>
+                            </linearGradient>
+                          </defs>
+                          <!-- thick strap men style -->
+                          <rect x="31" y="2" width="18" height="13" rx="3" fill="#1e3a8a"/>
+                          <rect x="31" y="65" width="18" height="13" rx="3" fill="#1e3a8a"/>
+                          <line x1="34" y1="6" x2="46" y2="6" stroke="white" stroke-width="1.2" stroke-opacity="0.35"/>
+                          <line x1="34" y1="72" x2="46" y2="72" stroke="white" stroke-width="1.2" stroke-opacity="0.35"/>
+                          <circle cx="40" cy="40" r="25" fill="url(#g-mw-case)"/>
+                          <circle cx="40" cy="40" r="25" fill="white" fill-opacity="0.1"/>
+                          <circle cx="40" cy="40" r="19" fill="url(#g-mw-face)"/>
+                          <circle cx="40" cy="26" r="1.5" fill="#1d4ed8"/>
+                          <circle cx="40" cy="54" r="1.5" fill="#1d4ed8"/>
+                          <circle cx="26" cy="40" r="1.5" fill="#1d4ed8"/>
+                          <circle cx="54" cy="40" r="1.5" fill="#1d4ed8"/>
+                          <line x1="40" y1="40" x2="40" y2="26" stroke="#1d4ed8" stroke-width="2.5" stroke-linecap="round"/>
+                          <line x1="40" y1="40" x2="52" y2="45" stroke="#1e40af" stroke-width="2" stroke-linecap="round"/>
+                          <circle cx="40" cy="40" r="2.5" fill="#1d4ed8"/>
+                          <circle cx="40" cy="40" r="1" fill="#bfdbfe"/>
+                          <rect x="64" y="35" width="6" height="10" rx="2" fill="#1e3a8a"/>
+                          <!-- M badge -->
+                          <circle cx="40" cy="62" r="0" fill="none"/>
+                        </svg>
+                        <span class="cat-label">Men's</span>
+                    </button>
+
+                    <!-- WOMEN'S WATCH -->
+                    <button onclick="app.filterCategory('womenswatch')" class="cat-btn" id="btn-womenswatch">
+                        <svg class="icon-3d" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+                          <defs>
+                            <linearGradient id="g-ww-case" x1="15" y1="15" x2="65" y2="65" gradientUnits="userSpaceOnUse">
+                              <stop offset="0%" stop-color="#60a5fa"/>
+                              <stop offset="100%" stop-color="#1d4ed8"/>
+                            </linearGradient>
+                            <linearGradient id="g-ww-face" x1="25" y1="25" x2="55" y2="55" gradientUnits="userSpaceOnUse">
+                              <stop offset="0%" stop-color="#dbeafe"/>
+                              <stop offset="100%" stop-color="#93c5fd"/>
+                            </linearGradient>
+                          </defs>
+                          <!-- slim elegant strap -->
+                          <rect x="34" y="4" width="12" height="11" rx="4" fill="#1e40af"/>
+                          <rect x="34" y="65" width="12" height="11" rx="4" fill="#1e40af"/>
+                          <circle cx="40" cy="40" r="22" fill="url(#g-ww-case)"/>
+                          <circle cx="40" cy="40" r="22" fill="white" fill-opacity="0.15"/>
+                          <circle cx="40" cy="40" r="16" fill="url(#g-ww-face)"/>
+                          <!-- delicate markers -->
+                          <circle cx="40" cy="28" r="1.2" fill="#1d4ed8"/>
+                          <circle cx="40" cy="52" r="1.2" fill="#1d4ed8"/>
+                          <circle cx="28" cy="40" r="1.2" fill="#1d4ed8"/>
+                          <circle cx="52" cy="40" r="1.2" fill="#1d4ed8"/>
+                          <line x1="40" y1="40" x2="40" y2="29" stroke="#1d4ed8" stroke-width="1.8" stroke-linecap="round"/>
+                          <line x1="40" y1="40" x2="49" y2="44" stroke="#1e40af" stroke-width="1.5" stroke-linecap="round"/>
+                          <circle cx="40" cy="40" r="2" fill="#1d4ed8"/>
+                          <circle cx="40" cy="40" r="0.8" fill="#bfdbfe"/>
+                          <!-- slim crown -->
+                          <rect x="61" y="36" width="4.5" height="8" rx="1.5" fill="#1e40af"/>
+                        </svg>
+                        <span class="cat-label">Women's</span>
+                    </button>
+
+<!-- POWERBANK -->
+                    <button onclick="app.filterCategory('powerbank')" class="cat-btn" id="btn-powerbank">
+                        <svg class="icon-3d" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+                          <defs>
+                            <linearGradient id="g-pb-body" x1="20" y1="10" x2="60" y2="70" gradientUnits="userSpaceOnUse">
+                              <stop offset="0%" stop-color="#60a5fa"/>
+                              <stop offset="100%" stop-color="#1d4ed8"/>
+                            </linearGradient>
+                          </defs>
+                          <rect x="22" y="12" width="36" height="56" rx="8" fill="url(#g-pb-body)"/>
+                          <rect x="22" y="12" width="36" height="10" rx="8" fill="white" fill-opacity="0.2"/>
+                          <!-- USB port -->
+                          <rect x="32" y="18" width="16" height="5" rx="1.5" fill="#1e3a8a"/>
+                          <!-- battery bars -->
+                          <rect x="30" y="32" width="20" height="6" rx="2" fill="white" fill-opacity="0.85"/>
+                          <rect x="30" y="42" width="20" height="6" rx="2" fill="white" fill-opacity="0.6"/>
+                          <rect x="30" y="52" width="14" height="6" rx="2" fill="white" fill-opacity="0.35"/>
+                          <!-- lightning bolt -->
+                          <path d="M42 58 L38 66 L44 64 L40 72" stroke="#bfdbfe" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                        <span class="cat-label">Powerbank</span>
+                    </button>
+
+                    <!-- NECKBAND -->
+                    <button onclick="app.filterCategory('neckband')" class="cat-btn" id="btn-neckband">
+                        <svg class="icon-3d" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+                          <defs>
+                            <linearGradient id="g-nb-band" x1="10" y1="20" x2="70" y2="60" gradientUnits="userSpaceOnUse">
+                              <stop offset="0%" stop-color="#60a5fa"/>
+                              <stop offset="100%" stop-color="#1d4ed8"/>
+                            </linearGradient>
+                            <linearGradient id="g-nb-bud" x1="0" y1="0" x2="1" y2="1">
+                              <stop offset="0%" stop-color="#3b82f6"/>
+                              <stop offset="100%" stop-color="#1e3a8a"/>
+                            </linearGradient>
+                          </defs>
+                          <!-- neck band arc -->
+                          <path d="M18 28 C18 12 62 12 62 28" stroke="url(#g-nb-band)" stroke-width="7" fill="none" stroke-linecap="round"/>
+                          <path d="M20 28 C20 15 60 15 60 28" stroke="white" stroke-width="2" fill="none" stroke-linecap="round" stroke-opacity="0.25"/>
+                          <!-- left bud -->
+                          <ellipse cx="18" cy="42" rx="9" ry="12" fill="url(#g-nb-bud)"/>
+                          <ellipse cx="18" cy="42" rx="5" ry="7" fill="#1e40af"/>
+                          <ellipse cx="18" cy="42" rx="2.5" ry="3.5" fill="#93c5fd"/>
+                          <!-- right bud -->
+                          <ellipse cx="62" cy="42" rx="9" ry="12" fill="url(#g-nb-bud)"/>
+                          <ellipse cx="62" cy="42" rx="5" ry="7" fill="#1e40af"/>
+                          <ellipse cx="62" cy="42" rx="2.5" ry="3.5" fill="#93c5fd"/>
+                          <!-- wire down -->
+                          <path d="M18 52 Q18 62 28 68" stroke="#1e40af" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+                          <path d="M62 52 Q62 62 52 68" stroke="#1e40af" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+                        </svg>
+                        <span class="cat-label">Neckband</span>
+                    </button>
+
+
+                    <!-- HEADPHONES -->
+                    <button onclick="app.filterCategory('headphone')" class="cat-btn" id="btn-headphone">
+                        <svg class="icon-3d" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+                          <defs>
+                            <linearGradient id="g-hp-arc" x1="10" y1="10" x2="70" y2="40" gradientUnits="userSpaceOnUse">
+                              <stop offset="0%" stop-color="#60a5fa"/>
+                              <stop offset="100%" stop-color="#1d4ed8"/>
+                            </linearGradient>
+                            <linearGradient id="g-hp-cup" x1="0" y1="0" x2="1" y2="1" gradientUnits="userSpaceOnUse">
+                              <stop offset="0%" stop-color="#3b82f6"/>
+                              <stop offset="100%" stop-color="#1e3a8a"/>
+                            </linearGradient>
+                          </defs>
+                          <path d="M18 42 C18 22 62 22 62 42" stroke="url(#g-hp-arc)" stroke-width="7" fill="none" stroke-linecap="round"/>
+                          <path d="M20 40 C20 24 60 24 60 40" stroke="white" stroke-width="2" fill="none" stroke-linecap="round" stroke-opacity="0.3"/>
+                          <rect x="8" y="42" width="18" height="22" rx="9" fill="url(#g-hp-cup)"/>
+                          <rect x="8" y="42" width="18" height="8" rx="9" fill="white" fill-opacity="0.2"/>
+                          <ellipse cx="17" cy="53" rx="6" ry="7" fill="#1e40af"/>
+                          <ellipse cx="17" cy="53" rx="3.5" ry="4.5" fill="#bfdbfe"/>
+                          <rect x="54" y="42" width="18" height="22" rx="9" fill="url(#g-hp-cup)"/>
+                          <rect x="54" y="42" width="18" height="8" rx="9" fill="white" fill-opacity="0.2"/>
+                          <ellipse cx="63" cy="53" rx="6" ry="7" fill="#1e40af"/>
+                          <ellipse cx="63" cy="53" rx="3.5" ry="4.5" fill="#bfdbfe"/>
+                          <ellipse cx="17" cy="65" rx="8" ry="2.5" fill="#1e3a8a" fill-opacity="0.3"/>
+                          <ellipse cx="63" cy="65" rx="8" ry="2.5" fill="#1e3a8a" fill-opacity="0.3"/>
+                        </svg>
+                        <span class="cat-label">Headphones</span>
+                    </button>
+
+                    <!-- EARBUDS -->
+                    <button onclick="app.filterCategory('earbuds')" class="cat-btn" id="btn-earbuds">
+                        <svg class="icon-3d" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+                          <defs>
+                            <linearGradient id="g-eb-case" x1="10" y1="10" x2="70" y2="70" gradientUnits="userSpaceOnUse">
+                              <stop offset="0%" stop-color="#60a5fa"/>
+                              <stop offset="100%" stop-color="#1d4ed8"/>
+                            </linearGradient>
+                            <linearGradient id="g-eb-lid" x1="10" y1="10" x2="70" y2="30" gradientUnits="userSpaceOnUse">
+                              <stop offset="0%" stop-color="#93c5fd"/>
+                              <stop offset="100%" stop-color="#3b82f6"/>
+                            </linearGradient>
+                            <linearGradient id="g-eb-bud" x1="0" y1="0" x2="1" y2="1" gradientUnits="userSpaceOnUse">
+                              <stop offset="0%" stop-color="#bfdbfe"/>
+                              <stop offset="100%" stop-color="#3b82f6"/>
+                            </linearGradient>
+                          </defs>
+                          <rect x="12" y="28" width="56" height="42" rx="14" fill="url(#g-eb-case)"/>
+                          <path d="M12 42 Q12 28 40 26 Q68 28 68 42 Z" fill="url(#g-eb-lid)"/>
+                          <rect x="12" y="28" width="56" height="5" rx="5" fill="white" fill-opacity="0.25"/>
+                          <line x1="12" y1="42" x2="68" y2="42" stroke="white" stroke-width="1.5" stroke-opacity="0.3"/>
+                          <ellipse cx="28" cy="55" rx="10" ry="11" fill="url(#g-eb-bud)"/>
+                          <ellipse cx="28" cy="55" rx="10" ry="4" fill="white" fill-opacity="0.15"/>
+                          <ellipse cx="28" cy="52" rx="4" ry="4.5" fill="#1e3a8a"/>
+                          <ellipse cx="28" cy="51.5" rx="2" ry="2.5" fill="#bfdbfe" fill-opacity="0.7"/>
+                          <ellipse cx="52" cy="55" rx="10" ry="11" fill="url(#g-eb-bud)"/>
+                          <ellipse cx="52" cy="55" rx="10" ry="4" fill="white" fill-opacity="0.15"/>
+                          <ellipse cx="52" cy="52" rx="4" ry="4.5" fill="#1e3a8a"/>
+                          <ellipse cx="52" cy="51.5" rx="2" ry="2.5" fill="#bfdbfe" fill-opacity="0.7"/>
+                          <circle cx="38" cy="68" r="2" fill="white" fill-opacity="0.3"/>
+                          <circle cx="42" cy="68" r="2" fill="white" fill-opacity="0.5"/>
+                          <ellipse cx="40" cy="71" rx="22" ry="3" fill="#1e3a8a" fill-opacity="0.2"/>
+                        </svg>
+                        <span class="cat-label">Earbuds</span>
+                    </button>
+
+                    <!-- BLUETOOTH SPEAKER -->
+                    <button onclick="app.filterCategory('speaker')" class="cat-btn" id="btn-speaker">
+                        <svg class="icon-3d" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+                          <defs>
+                            <linearGradient id="g-spk-body" x1="10" y1="10" x2="70" y2="70" gradientUnits="userSpaceOnUse">
+                              <stop offset="0%" stop-color="#60a5fa"/>
+                              <stop offset="100%" stop-color="#1d4ed8"/>
+                            </linearGradient>
+                            <linearGradient id="g-spk-top" x1="10" y1="10" x2="70" y2="30" gradientUnits="userSpaceOnUse">
+                              <stop offset="0%" stop-color="#93c5fd"/>
+                              <stop offset="100%" stop-color="#3b82f6"/>
+                            </linearGradient>
+                            <radialGradient id="g-spk-woofer" cx="50%" cy="50%" r="50%">
+                              <stop offset="0%" stop-color="#1e3a8a"/>
+                              <stop offset="100%" stop-color="#1e40af"/>
+                            </radialGradient>
+                          </defs>
+                          <rect x="8" y="25" width="64" height="34" rx="17" fill="url(#g-spk-body)"/>
+                          <rect x="8" y="25" width="64" height="10" rx="17" fill="white" fill-opacity="0.2"/>
+                          <line x1="14" y1="33" x2="14" y2="51" stroke="white" stroke-width="1.2" stroke-opacity="0.3"/>
+                          <line x1="18" y1="31" x2="18" y2="53" stroke="white" stroke-width="1.2" stroke-opacity="0.3"/>
+                          <circle cx="40" cy="42" r="13" fill="url(#g-spk-woofer)"/>
+                          <circle cx="40" cy="42" r="13" stroke="white" stroke-width="1.5" stroke-opacity="0.2" fill="none"/>
+                          <circle cx="40" cy="42" r="10" stroke="#3b82f6" stroke-width="1.5" fill="none" stroke-opacity="0.5"/>
+                          <circle cx="40" cy="42" r="7" stroke="#60a5fa" stroke-width="1.5" fill="none" stroke-opacity="0.4"/>
+                          <circle cx="40" cy="42" r="4" fill="#3b82f6"/>
+                          <circle cx="40" cy="42" r="2" fill="#bfdbfe"/>
+                          <line x1="62" y1="33" x2="62" y2="51" stroke="white" stroke-width="1.2" stroke-opacity="0.3"/>
+                          <line x1="66" y1="31" x2="66" y2="53" stroke="white" stroke-width="1.2" stroke-opacity="0.3"/>
+                          <circle cx="20" cy="42" r="5" fill="#1e40af"/>
+                          <circle cx="20" cy="42" r="3" fill="#3b82f6"/>
+                          <circle cx="20" cy="42" r="1.5" fill="#93c5fd"/>
+                          <circle cx="60" cy="42" r="5" fill="#1e40af"/>
+                          <circle cx="60" cy="42" r="3" fill="#3b82f6"/>
+                          <circle cx="60" cy="42" r="1.5" fill="#93c5fd"/>
+                          <text x="35" y="23" font-size="9" fill="white" fill-opacity="0.7" font-family="sans-serif" font-weight="bold">&#x1F4F6;</text>
+                          <ellipse cx="40" cy="62" rx="28" ry="4" fill="#1e3a8a" fill-opacity="0.25"/>
+                        </svg>
+                        <span class="cat-label">Speakers</span>
+                    </button>
+
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6" id="products-grid">
+                <!-- Products will be loaded here from JSON -->
+                <div class="col-span-3 text-center py-16">
+                    <div class="loader"></div>
+                    <p class="text-gray-400 mt-4">Loading products...</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Customer Reviews (visible to everyone at bottom) -->
+        <section id="reviews-section" class="mt-12 mb-8">
+            <div class="flex items-center justify-between mb-5">
+                <h3 class="font-heading text-2xl font-bold text-gray-900 flex items-center gap-2">
+                    <i class="fas fa-comments text-blue-500"></i> Customer Reviews
+                </h3>
+            </div>
+            <div id="home-reviews-list" class="space-y-3 mb-5">
+                <p class="text-sm text-gray-400 text-center py-6">Loading reviews...</p>
+            </div>
+            <!-- Public comment-style review box -->
+            <div class="bg-white border border-gray-200 rounded-2xl p-4 shadow-sm">
+                <p class="text-sm font-semibold text-gray-800 mb-3">Write a Review 💬</p>
+                <div class="flex gap-3">
+                    <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
+                        <i class="fas fa-user text-blue-500"></i>
+                    </div>
+                    <div class="flex-1 space-y-2">
+                        <input type="text" id="home-review-name" placeholder="Your name" class="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:border-blue-400 outline-none" maxlength="40">
+                        <select id="home-review-product" class="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:border-blue-400 outline-none">
+                            <option value="">Select product...</option>
+                        </select>
+                        <div class="flex items-center gap-1" id="home-review-star-picker">
+                            <button type="button" data-star="1" class="home-review-star text-xl text-gray-300 hover:text-yellow-400"><i class="fas fa-star"></i></button>
+                            <button type="button" data-star="2" class="home-review-star text-xl text-gray-300 hover:text-yellow-400"><i class="fas fa-star"></i></button>
+                            <button type="button" data-star="3" class="home-review-star text-xl text-gray-300 hover:text-yellow-400"><i class="fas fa-star"></i></button>
+                            <button type="button" data-star="4" class="home-review-star text-xl text-gray-300 hover:text-yellow-400"><i class="fas fa-star"></i></button>
+                            <button type="button" data-star="5" class="home-review-star text-xl text-gray-300 hover:text-yellow-400"><i class="fas fa-star"></i></button>
+                            <span id="home-review-rating-label" class="text-xs text-gray-400 ml-2">Tap stars</span>
+                        </div>
+                        <div class="flex gap-2">
+                            <textarea id="home-review-comment" rows="2" placeholder="Write your comment / review..." class="flex-1 border border-gray-200 rounded-xl px-3 py-2 text-sm resize-none focus:border-blue-400 outline-none" maxlength="300"></textarea>
+                            <button onclick="app.submitHomeReview()" id="home-review-submit-btn" class="self-end bg-blue-600 text-white px-4 py-2 rounded-xl text-sm font-semibold hover:bg-blue-700 transition-colors">
+                                <i class="fas fa-paper-plane"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t border-gray-200 mt-16">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+            <div class="grid md:grid-cols-4 gap-8 mb-8">
+                <div>
+                    <h4 class="font-heading font-bold text-lg mb-4">Alhamdulillah Gadgets</h4>
+                    <p class="text-gray-500 text-sm">Powered by Faith, Driven by Tech 🚀</p>
+                    <p class="text-gray-400 text-xs mt-1">Your trusted source for quality gadgets in Tamil Nadu.</p>
+                </div>
+                <div>
+                    <h4 class="font-bold mb-4">Shop</h4>
+                    <ul class="space-y-2 text-sm text-gray-500">
+                        <li><a href="#" onclick="app.filterCategory('smartwatch')" class="hover:text-blue-500 flex items-center gap-2"><i class="fas fa-clock text-blue-400"></i> Smart Watches</a></li>
+                        <li><a href="#" onclick="app.filterCategory('menswatch')" class="hover:text-blue-500 flex items-center gap-2"><i class="fas fa-clock text-blue-400"></i> Men's Watches</a></li>
+                        <li><a href="#" onclick="app.filterCategory('womenswatch')" class="hover:text-blue-500 flex items-center gap-2"><i class="fas fa-clock text-pink-400"></i> Women's Watches</a></li>
+                        <li><a href="#" onclick="app.filterCategory('powerbank')" class="hover:text-blue-500 flex items-center gap-2"><i class="fas fa-battery-full text-green-400"></i> Powerbanks</a></li>
+                        <li><a href="#" onclick="app.filterCategory('neckband')" class="hover:text-blue-500 flex items-center gap-2"><i class="fas fa-headphones text-pink-400"></i> Neckbands</a></li>
+                        <li><a href="#" onclick="app.filterCategory('earbuds')" class="hover:text-blue-500 flex items-center gap-2"><i class="fas fa-headphones text-pink-400"></i> Earbuds</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-bold mb-4">Support</h4>
+                    <ul class="space-y-2 text-sm text-gray-500">
+                        <li><a href="https://wa.me/917092427154" class="hover:text-blue-500 flex items-center gap-2"><i class="fab fa-whatsapp text-green-500"></i> WhatsApp</a></li>
+                        <li><a href="#" class="hover:text-blue-500 flex items-center gap-2"><i class="fas fa-truck text-blue-400"></i> Track Order</a></li>
+                        <li><a href="#" class="hover:text-blue-500 flex items-center gap-2"><i class="fas fa-undo text-orange-400"></i> Returns</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-bold mb-4">Contact</h4>
+                    <p class="text-sm text-gray-500 mb-2">WhatsApp: +91 70924 27154</p>
+                    <p class="text-xs text-gray-400 mt-3 cursor-pointer hover:text-blue-500" onclick="app.openAdmin()" title="Admin">•</p>
+                    <div class="flex gap-3 mt-4">
+                        <a href="https://wa.me/917092427154" class="w-10 h-10 rounded-full bg-green-500 text-white flex items-center justify-center hover:scale-110 transition-transform">
+                            <i class="fab fa-whatsapp"></i>
+                        </a>
+                        <a href="#" class="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 text-white flex items-center justify-center hover:scale-110 transition-transform">
+                            <i class="fab fa-instagram"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="border-t border-gray-200 pt-8 text-center text-sm text-gray-400">
+                &copy; 2024 Alhamdulillah Gadgets. All rights reserved.
+            </div>
+        </div>
+    </footer>
+
+    <!-- Product Detail Modal -->
+    <div id="product-modal" class="fixed inset-0 z-50 hidden modal-overlay flex items-center justify-center p-4" onclick="app.closeProductModal()">
+        <div class="modal-content w-full max-w-2xl max-h-[90vh] overflow-y-auto transform scale-95 opacity-0 transition-all duration-300" onclick="event.stopPropagation()">
+            <div class="grid md:grid-cols-2 gap-0">
+                <div class="relative aspect-square bg-gray-100" id="modal-media-container">
+                    <!-- Video or Image will be inserted here -->
+                    <button onclick="app.closeProductModal()" class="absolute top-4 right-4 w-10 h-10 bg-white/90 rounded-full flex items-center justify-center shadow-lg hover:bg-white transition-colors md:hidden z-20">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="p-6 md:p-8 flex flex-col justify-center relative">
+                    <button onclick="app.closeProductModal()" class="absolute top-4 right-4 w-10 h-10 rounded-full hover:bg-gray-100 flex items-center justify-center transition-colors hidden md:flex">
+                        <i class="fas fa-times text-gray-500"></i>
+                    </button>
+                    <span id="modal-product-category" class="text-sm font-medium text-blue-600 uppercase tracking-wide mb-2"></span>
+                    <h3 id="modal-product-name" class="font-heading text-2xl font-bold text-gray-900 mb-2"></h3>
+                    <div class="flex items-center gap-2 mb-3 flex-wrap">
+                        <div id="modal-product-stars" class="flex text-yellow-400 text-sm"></div>
+                        <span id="modal-product-review-count" class="text-sm text-gray-500"></span>
+                        <span id="modal-product-cod" class="text-xs font-medium px-2 py-1 rounded-full"></span>
+                    </div>
+                    <p id="modal-product-desc" class="text-gray-600 mb-4"></p>
+                    <div class="flex items-baseline gap-3 mb-6">
+                        <span id="modal-product-price" class="text-3xl font-bold text-blue-600"></span>
+                        <span id="modal-product-original" class="text-lg text-gray-400 line-through"></span>
+                        <span id="modal-product-discount" class="discount-badge"></span>
+                    </div>
+                    <div class="space-y-3">
+                        <button id="modal-add-to-cart" class="btn-primary w-full flex items-center justify-center gap-2 py-4 text-lg">
+                            <i class="fas fa-cart-plus"></i> Add to Cart
+                        </button>
+                        <button id="modal-whatsapp-enquire" class="whatsapp-btn w-full flex items-center justify-center gap-2 py-4 text-lg rounded-xl font-semibold hover:shadow-lg transition-all">
+                            <i class="fab fa-whatsapp text-2xl"></i> Enquire on WhatsApp
+                        </button>
+                        <div class="flex gap-4 text-sm text-gray-500 justify-center pt-2">
+                            <span class="flex items-center gap-1"><i class="fas fa-truck text-blue-400"></i> Free Shipping</span>
+                            <span class="flex items-center gap-1"><i class="fas fa-undo text-orange-400"></i> 7 Days Return</span>
+                            <span class="flex items-center gap-1"><i class="fas fa-shield-alt text-green-400"></i> Warranty</span>
+                        </div>
+                    </div>
+
+                    <!-- Reviews Section (at bottom of product) -->
+                    <div class="mt-6 border-t border-gray-100 pt-5">
+                        <h4 class="font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                            <i class="fas fa-comments text-blue-500"></i> Reviews & Comments
+                        </h4>
+                        <div id="modal-reviews-list" class="space-y-3 mb-4 max-h-56 overflow-y-auto"></div>
+
+                        <!-- Comment-box style review form -->
+                        <div class="bg-white border border-gray-200 rounded-2xl p-3">
+                            <div class="flex gap-3">
+                                <div class="w-9 h-9 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0 mt-1">
+                                    <i class="fas fa-user text-blue-500 text-sm"></i>
+                                </div>
+                                <div class="flex-1 space-y-2">
+                                    <input type="text" id="review-name" placeholder="Your name" class="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:border-blue-400 outline-none" maxlength="40">
+                                    <div class="flex items-center gap-1" id="review-star-picker">
+                                        <button type="button" data-star="1" class="review-star text-xl text-gray-300 hover:text-yellow-400"><i class="fas fa-star"></i></button>
+                                        <button type="button" data-star="2" class="review-star text-xl text-gray-300 hover:text-yellow-400"><i class="fas fa-star"></i></button>
+                                        <button type="button" data-star="3" class="review-star text-xl text-gray-300 hover:text-yellow-400"><i class="fas fa-star"></i></button>
+                                        <button type="button" data-star="4" class="review-star text-xl text-gray-300 hover:text-yellow-400"><i class="fas fa-star"></i></button>
+                                        <button type="button" data-star="5" class="review-star text-xl text-gray-300 hover:text-yellow-400"><i class="fas fa-star"></i></button>
+                                        <span id="review-rating-label" class="text-xs text-gray-400 ml-2">Tap stars</span>
+                                    </div>
+                                    <div class="flex gap-2">
+                                        <textarea id="review-comment" rows="2" placeholder="Write a comment..." class="flex-1 border border-gray-200 rounded-xl px-3 py-2 text-sm resize-none focus:border-blue-400 outline-none" maxlength="300"></textarea>
+                                        <button onclick="app.submitReview()" id="review-submit-btn" class="self-end bg-blue-600 text-white w-10 h-10 rounded-full flex items-center justify-center hover:bg-blue-700 transition-colors flex-shrink-0">
+                                            <i class="fas fa-paper-plane text-sm"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cart/Checkout Modal -->
+    <div id="checkout-overlay" class="fixed inset-0 z-50 hidden modal-overlay flex items-center justify-center p-4">
+        <div id="checkout-content" class="modal-content w-full max-w-2xl max-h-[90vh] overflow-y-auto transform scale-95 opacity-0 transition-all duration-300">
+            <div class="sticky top-0 bg-white p-6 border-b border-gray-100 flex justify-between items-center z-10 rounded-t-3xl">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                        <i class="fas fa-shopping-cart text-blue-600"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-heading text-2xl font-bold">Shopping Cart</h3>
+                        <p class="text-sm text-gray-500" id="cart-item-count">0 items</p>
+                    </div>
+                </div>
+                <button onclick="app.closeCheckout()" class="w-10 h-10 rounded-full hover:bg-gray-100 flex items-center justify-center transition-colors">
+                    <i class="fas fa-times text-gray-500"></i>
+                </button>
+            </div>
+            <div class="p-6">
+                <div class="flex items-center justify-center mb-8">
+                    <div class="flex items-center gap-2 sm:gap-4">
+                        <div id="step-1" class="step active">1</div>
+                        <div class="w-8 sm:w-12 h-1 bg-gray-200 rounded"><div id="progress-1" class="h-full bg-blue-500 rounded transition-all duration-500" style="width: 0%"></div></div>
+                        <div id="step-2" class="step pending">2</div>
+                        <div class="w-8 sm:w-12 h-1 bg-gray-200 rounded"><div id="progress-2" class="h-full bg-blue-500 rounded transition-all duration-500" style="width: 0%"></div></div>
+                        <div id="step-3" class="step pending">3</div>
+                    </div>
+                </div>
+                <div id="checkout-step-1" class="checkout-step">
+                    <div id="checkout-items" class="space-y-4 mb-6"></div>
+                    <div id="empty-cart-msg" class="hidden text-center py-12">
+                        <div class="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <i class="fas fa-shopping-cart text-3xl text-gray-300"></i>
+                        </div>
+                        <p class="text-gray-500 mb-4">Your cart is empty</p>
+                        <button onclick="app.closeCheckout(); app.scrollToProducts()" class="btn-primary">Start Shopping</button>
+                    </div>
+                    <div id="cart-summary" class="bg-gray-50 rounded-xl p-4 space-y-2 mb-6">
+                        <div class="flex justify-between text-sm"><span class="text-gray-500">Subtotal</span><span id="checkout-subtotal" class="font-medium">₹0</span></div>
+                        <div class="flex justify-between text-sm"><span class="text-gray-500">COD Extra Charge</span><span id="checkout-cod-charge" class="font-medium">₹0</span></div>
+                        <div class="border-t border-gray-200 pt-2 flex justify-between"><span class="font-semibold text-gray-900">Total</span><span id="checkout-total" class="text-xl font-bold text-blue-600">₹0</span></div>
+                    </div>
+                    <button id="continue-btn" onclick="app.goToStep(2)" class="btn-primary w-full">Continue to Address</button>
+                </div>
+                <div id="checkout-step-2" class="checkout-step hidden">
+                    <form onsubmit="event.preventDefault(); app.goToStep(3);" class="space-y-4">
+                        <div class="grid md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Full Name *</label>
+                                <input type="text" id="addr-name" required class="form-input" placeholder="Your full name">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Phone Number *</label>
+                                <input type="tel" id="addr-phone" required pattern="[0-9]{10}" class="form-input" placeholder="10 digit number">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
+                            <input type="email" id="addr-email" class="form-input" placeholder="your@email.com">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Street Address *</label>
+                            <textarea id="addr-street" required rows="2" class="form-input" placeholder="House number, Street, Landmark"></textarea>
+                        </div>
+                        <div class="grid md:grid-cols-3 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">City *</label>
+                                <input type="text" id="addr-city" required class="form-input" placeholder="City">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">PIN Code *</label>
+                                <input type="text" id="addr-pincode" required pattern="[0-9]{6}" class="form-input" placeholder="6 digits">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">State *</label>
+                                <select id="addr-state" required class="form-input">
+                                    <option value="">Select State</option>
+                                    <option value="Tamil Nadu">Tamil Nadu</option>
+                                    <option value="Kerala">Kerala</option>
+                                    <option value="Karnataka">Karnataka</option>
+                                    <option value="Andhra Pradesh">Andhra Pradesh</option>
+                                    <option value="Telangana">Telangana</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Order Notes (Optional)</label>
+                            <textarea id="addr-notes" rows="2" class="form-input" placeholder="Any special instructions..."></textarea>
+                        </div>
+                        <div id="addr-cod-status" class="rounded-xl p-3 border text-sm font-medium">
+                            💵 Cash on Delivery: <span id="addr-cod-label">Checking...</span>
+                        </div>
+                        <div class="flex gap-3 pt-4">
+                            <button type="button" onclick="app.goToStep(1)" class="btn-secondary flex-1">Back to Cart</button>
+                            <button type="submit" class="btn-primary flex-1">Continue</button>
+                        </div>
+                    </form>
+                </div>
+                <div id="checkout-step-3" class="checkout-step hidden">
+                    <div class="bg-blue-50 rounded-xl p-4 mb-6">
+                        <h4 class="font-semibold text-blue-900 mb-3 flex items-center gap-2"><i class="fas fa-map-marker-alt text-blue-600"></i> Delivery Address</h4>
+                        <div id="confirm-address" class="text-sm text-blue-800 space-y-1"></div>
+                    </div>
+                    <div class="bg-gray-50 rounded-xl p-4 mb-6">
+                        <h4 class="font-semibold text-gray-900 mb-3">Order Summary</h4>
+                        <div id="confirm-items" class="space-y-2 mb-3 text-sm max-h-40 overflow-y-auto"></div>
+                        <div class="flex justify-between text-sm text-gray-500 mb-1">
+                            <span>Subtotal</span>
+                            <span id="confirm-subtotal">₹0</span>
+                        </div>
+                        <div class="flex justify-between text-sm text-gray-500 mb-2">
+                            <span>COD Extra Charge</span>
+                            <span id="confirm-cod-charge">₹0</span>
+                        </div>
+                        <div class="border-t border-gray-200 pt-3 flex justify-between items-center">
+                            <span class="text-gray-600">Total Amount</span>
+                            <span id="confirm-total" class="text-2xl font-bold text-blue-600"></span>
+                        </div>
+                    </div>
+                    <div id="cod-status-box" class="bg-green-50 border border-green-200 rounded-xl p-4 mb-6">
+                        <div class="flex items-start gap-3">
+                            <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
+                                <i class="fab fa-whatsapp text-2xl text-green-600"></i>
+                            </div>
+                            <div>
+                                <p class="font-semibold text-green-900">Order via WhatsApp</p>
+                                <p class="text-sm text-green-700">Your order will be sent to: <span class="font-bold">+91 70924 27154</span></p>
+                                <p id="cod-status-text" class="text-sm font-semibold mt-2">💵 Cash on Delivery: Checking...</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex gap-3">
+                        <button onclick="app.goToStep(2)" class="btn-secondary flex-1">Edit Address</button>
+                        <button onclick="app.placeOrder()" class="whatsapp-btn w-full py-4 rounded-xl font-bold text-lg flex items-center justify-center gap-2 hover:shadow-xl transition-all">
+                            <i class="fab fa-whatsapp text-2xl"></i> Place Order on WhatsApp
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Search/Menu Modal -->
+    <div id="modal-overlay" class="fixed inset-0 z-50 hidden modal-overlay flex items-center justify-center p-4" onclick="app.closeModal()">
+        <div id="modal-content" class="modal-content w-full max-w-md max-h-[85vh] overflow-y-auto p-6 transform scale-95 opacity-0 transition-all duration-300" onclick="event.stopPropagation()"></div>
+    </div>
+
+    <!-- Toast -->
+    <div id="toast" class="toast flex items-center gap-3">
+        <i class="fas fa-check-circle text-xl"></i>
+        <span id="toast-message">Success!</span>
+    </div>
+
+
+    <!-- Admin Modal -->
+    <div id="admin-modal" class="fixed inset-0 z-[60] hidden modal-overlay flex items-center justify-center p-4" onclick="app.closeAdmin()">
+        <div class="modal-content w-full max-w-3xl max-h-[90vh] overflow-y-auto bg-white rounded-2xl p-6 transform scale-95 opacity-0 transition-all duration-300" onclick="event.stopPropagation()" id="admin-content">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="font-heading text-2xl font-bold text-gray-900">🛠 Admin Panel</h2>
+                <button onclick="app.closeAdmin()" class="w-10 h-10 rounded-full hover:bg-gray-100 flex items-center justify-center">
+                    <i class="fas fa-times text-gray-500"></i>
+                </button>
+            </div>
+
+            <!-- Login -->
+            <div id="admin-login">
+                <p class="text-gray-600 mb-4">Only the shop owner's Google account can manage products</p>
+                <button onclick="app.adminLogin()" class="w-full flex items-center justify-center gap-3 bg-white border border-gray-300 rounded-xl px-6 py-3 font-semibold hover:bg-gray-50 shadow-sm">
+                    <svg width="20" height="20" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3c-1.6 4.7-6.1 8-11.3 8-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.9 1.1 8 3l6-6C34.5 5.1 29.5 3 24 3 12.4 3 3 12.4 3 24s9.4 21 21 21 21-9.4 21-21c0-1.4-.1-2.7-.4-3.5z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.6 15.9 18.9 13 24 13c3.1 0 5.9 1.1 8 3l6-6C34.5 5.1 29.5 3 24 3c-7.7 0-14.3 4.4-17.7 10.7z"/><path fill="#4CAF50" d="M24 45c5.4 0 10.3-1.8 14-5l-6.5-5.3c-2 1.4-4.6 2.3-7.5 2.3-5.2 0-9.6-3.3-11.3-7.9l-6.6 5.1C9.6 40.6 16.2 45 24 45z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.3-2.2 4.3-4.1 5.7l6.5 5.3C41.5 36 45 30.5 45 24c0-1.4-.1-2.7-.4-3.5z"/></svg>
+                    Sign in with Google
+                </button>
+            </div>
+
+            <!-- Admin Dashboard -->
+            <div id="admin-dashboard" class="hidden">
+                <div class="flex flex-wrap gap-3 mb-6">
+                    <button onclick="app.showAddProductForm()" class="bg-green-600 text-white px-4 py-2 rounded-xl text-sm font-semibold hover:bg-green-700">
+                        <i class="fas fa-plus mr-1"></i> Add Product
+                    </button>
+                    <button onclick="app.showAddComboForm()" class="bg-pink-600 text-white px-4 py-2 rounded-xl text-sm font-semibold hover:bg-pink-700">
+                        <i class="fas fa-gift mr-1"></i> Add Combo
+                    </button>
+                    <button onclick="app.downloadJSON()" class="bg-blue-600 text-white px-4 py-2 rounded-xl text-sm font-semibold hover:bg-blue-700">
+                        <i class="fas fa-download mr-1"></i> Download all.json
+                    </button>
+                    <button onclick="app.resetToOriginal()" class="bg-gray-200 text-gray-700 px-4 py-2 rounded-xl text-sm font-semibold hover:bg-gray-300">
+                        Reset
+                    </button>
+                </div>
+
+                <!-- Add/Edit Combo Form -->
+                <div id="admin-combo-form" class="hidden bg-pink-50 rounded-xl p-5 mb-6 border border-pink-100">
+                    <h3 class="font-semibold text-lg mb-4" id="combo-form-title">Add Combo Offer</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <input type="text" id="c-name" placeholder="Combo Name (e.g. Watch + Earbuds)" class="border rounded-lg px-3 py-2 md:col-span-2">
+                        <textarea id="c-desc" placeholder="Short description (optional)" class="border rounded-lg px-3 py-2 md:col-span-2" rows="2"></textarea>
+                        <div class="md:col-span-2">
+                            <label class="text-sm font-medium text-gray-700 mb-2 block">Select Products (2 or more)</label>
+                            <div id="c-product-checks" class="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-48 overflow-y-auto bg-white rounded-lg border p-3"></div>
+                        </div>
+                        <div>
+                            <label class="text-sm text-gray-600">Individual Total</label>
+                            <p id="c-original-preview" class="text-lg font-semibold text-gray-500">₹0</p>
+                        </div>
+                        <div>
+                            <label class="text-sm text-gray-600">Combo Price ₹</label>
+                            <input type="number" id="c-price" placeholder="Special combo price" class="border rounded-lg px-3 py-2 w-full" min="0">
+                        </div>
+                        <input type="hidden" id="c-edit-id" value="">
+                    </div>
+                    <div class="flex gap-3 mt-4">
+                        <button onclick="app.saveCombo()" id="c-save-btn" class="bg-pink-600 text-white px-5 py-2 rounded-xl font-semibold">Save Combo</button>
+                        <button onclick="app.hideComboForm()" class="bg-gray-200 text-gray-700 px-5 py-2 rounded-xl">Cancel</button>
+                    </div>
+                </div>
+
+                <!-- Add/Edit Form -->
+                <div id="admin-form" class="hidden bg-gray-50 rounded-xl p-5 mb-6">
+                    <h3 class="font-semibold text-lg mb-4" id="form-title">Add New Product</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <input type="text" id="f-name" placeholder="Product Name" class="border rounded-lg px-3 py-2">
+                        <select id="f-category" class="border rounded-lg px-3 py-2">
+                            <option value="Smart Watch">Smart Watch</option>
+                            <option value="Automatic Watch">Automatic Watch</option>
+                            <option value="Men's Watch">Men's Watch</option>
+                            <option value="Women's Watch">Women's Watch</option>
+                            <option value="Powerbank">Powerbank</option>
+                            <option value="Neckband">Neckband</option>
+                            <option value="Earbuds">Earbuds</option>
+                            <option value="Headphones">Headphones</option>
+                            <option value="Speakers">Speakers</option>
+                        </select>
+                        <input type="number" id="f-price" placeholder="Offer Price" class="border rounded-lg px-3 py-2">
+                        <input type="number" id="f-original" placeholder="Original Price" class="border rounded-lg px-3 py-2">
+                        <div class="md:col-span-2 p-3 bg-green-50 rounded-xl border border-green-100 space-y-3">
+                            <label class="text-sm font-medium text-gray-800 block">💵 Cash on Delivery</label>
+                            <div class="flex flex-wrap gap-3">
+                                <label class="flex items-center gap-2 cursor-pointer px-4 py-2 rounded-lg border-2 border-green-300 bg-white has-[:checked]:border-green-500 has-[:checked]:bg-green-50">
+                                    <input type="radio" name="f-cod" id="f-cod-yes" value="yes" checked class="w-4 h-4 text-green-600">
+                                    <span class="text-sm font-medium text-green-800">✅ Available</span>
+                                </label>
+                                <label class="flex items-center gap-2 cursor-pointer px-4 py-2 rounded-lg border-2 border-gray-200 bg-white has-[:checked]:border-red-400 has-[:checked]:bg-red-50">
+                                    <input type="radio" name="f-cod" id="f-cod-no" value="no" class="w-4 h-4 text-red-500">
+                                    <span class="text-sm font-medium text-gray-700">❌ Not Available</span>
+                                </label>
+                            </div>
+                            <div class="flex items-center gap-2" id="cod-charge-wrap">
+                                <label class="text-sm text-gray-600 whitespace-nowrap">COD Extra Charge ₹</label>
+                                <input type="number" id="f-cod-charge" value="0" min="0" placeholder="0" class="border rounded-lg px-3 py-1.5 w-24 text-sm">
+                                <span class="text-xs text-gray-400">(0 = free)</span>
+                            </div>
+                        </div>
+                        <div class="md:col-span-2">
+                            <label class="text-sm text-gray-600 mb-1 block">📷 Photos - unga phone la irundhu direct ah upload pannunga</label>
+                            <input type="file" id="f-photo-files" accept="image/*" multiple class="border rounded-lg px-3 py-2 w-full bg-white">
+                            <div id="f-existing-images" class="flex flex-wrap gap-2 mt-2"></div>
+                            <p class="text-xs text-gray-400 mt-1">Multiple photos select pannalam. Old photos remove panna kீழே X click pannunga.</p>
+                        </div>
+                        <div class="md:col-span-2">
+                            <label class="text-sm text-gray-600 mb-1 block">🎥 Video (optional)</label>
+                            <input type="file" id="f-video-file" accept="video/*" class="border rounded-lg px-3 py-2 w-full bg-white">
+                            <div id="f-existing-video" class="text-xs text-gray-500 mt-1"></div>
+                        </div>
+                        <div id="f-upload-progress" class="md:col-span-2 hidden">
+                            <div class="w-full bg-gray-200 rounded-full h-2.5">
+                                <div id="f-upload-bar" class="bg-blue-600 h-2.5 rounded-full" style="width:0%"></div>
+                            </div>
+                            <p id="f-upload-text" class="text-xs text-gray-500 mt-1">Uploading...</p>
+                        </div>
+                        <textarea id="f-desc" placeholder="Description" class="border rounded-lg px-3 py-2 md:col-span-2" rows="2"></textarea>
+                    </div>
+                    <div class="flex gap-3 mt-4">
+                        <button onclick="app.saveProduct()" id="f-save-btn" class="bg-blue-600 text-white px-5 py-2 rounded-xl font-semibold">Save</button>
+                        <button onclick="app.hideAdminForm()" class="bg-gray-200 text-gray-700 px-5 py-2 rounded-xl">Cancel</button>
+                    </div>
+                    <input type="hidden" id="f-edit-index" value="-1">
+                    <input type="hidden" id="f-doc-id" value="">
+                </div>
+
+                <!-- Category Filter -->
+                <div class="mb-4">
+                    <p class="text-sm font-medium text-gray-600 mb-2">Filter by Category:</p>
+                    <div id="admin-category-filters" class="flex flex-wrap gap-2 overflow-x-auto pb-1"></div>
+                </div>
+
+                <!-- Products List -->
+                <div id="admin-product-list" class="space-y-3 max-h-[50vh] overflow-y-auto"></div>
+
+                <!-- Admin Combos List -->
+                <div class="mt-8 border-t border-gray-200 pt-6">
+                    <h3 class="font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                        <i class="fas fa-gift text-pink-500"></i> Combo Offers
+                    </h3>
+                    <div id="admin-combo-list" class="space-y-2 max-h-[40vh] overflow-y-auto">
+                        <p class="text-sm text-gray-400 text-center py-4">No combos yet.</p>
+                    </div>
+                </div>
+
+                <!-- Admin: Manage Reviews & Comments -->
+                <div class="mt-8 border-t border-gray-200 pt-6">
+                    <div class="flex items-center justify-between mb-3">
+                        <h3 class="font-semibold text-gray-900 flex items-center gap-2">
+                            <i class="fas fa-comments text-blue-500"></i> Reviews & Comments
+                        </h3>
+                        <button onclick="app.loadAdminReviews()" class="text-xs bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1.5 rounded-lg">
+                            <i class="fas fa-sync-alt mr-1"></i> Refresh
+                        </button>
+                    </div>
+                    <p class="text-xs text-gray-500 mb-3">Delete spam / unwanted reviews here.</p>
+                    <div id="admin-reviews-list" class="space-y-2 max-h-[40vh] overflow-y-auto">
+                        <p class="text-sm text-gray-400 text-center py-4">Click Refresh to load reviews...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/app.js"></script>
+
+</body>
+</html>
